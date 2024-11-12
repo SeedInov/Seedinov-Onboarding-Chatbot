@@ -9,9 +9,9 @@ export class RealtimeRelay {
   }
 
   listen(port) {
-    this.wss = new WebSocketServer({ port });
+    this.wss = new WebSocketServer({ port, path: '/socket' });
     this.wss.on('connection', this.connectionHandler.bind(this));
-    this.log(`Listening on ws://localhost:${port}`);
+    this.log(`Listening on ws://localhost:${port}/socket`);
   }
 
   async connectionHandler(ws, req) {
@@ -24,7 +24,7 @@ export class RealtimeRelay {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
 
-    if (pathname !== '/') {
+    if (pathname !== '/socket') {
       this.log(`Invalid pathname: "${pathname}"`);
       ws.close();
       return;
