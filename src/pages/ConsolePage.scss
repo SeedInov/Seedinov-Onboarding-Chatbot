@@ -19,6 +19,7 @@
   .content-top {
     display: flex;
     align-items: center;
+    color: #30ab89;
     padding: 8px 16px;
     min-height: 40px;
     .content-title {
@@ -26,6 +27,8 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
       img {
         width: 24px;
         height: 24px;
@@ -50,10 +53,13 @@
         flex-shrink: 0;
         padding-top: 16px;
         padding-bottom: 4px;
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 18px;
         position: relative;
       }
       .content-block-body {
-        color: #6e6e7f;
+        color: #d4d4d4;
         position: relative;
         flex-grow: 1;
         padding: 8px 0px;
@@ -216,6 +222,7 @@
       .event-summary {
         padding: 4px 8px;
         margin: 0px -8px;
+        color: #e7e7e7;
         &:hover {
           border-radius: 8px;
           background-color: #f0f0f0;
