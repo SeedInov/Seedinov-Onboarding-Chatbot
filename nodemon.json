@@ -1,0 +1,5 @@
+{
+  "watch": ["relay-server/**/*.ts"],
+  "exec": "tsx ./relay-server/index.ts",
+  "ext": "ts,js,mjs,cjs,json"
+}
