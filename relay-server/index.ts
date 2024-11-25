@@ -71,12 +71,10 @@ app.post('/api/connect', async (req, res) => {
     connectWith.connectedWith = socket.socket
     connectWith.connected = true
 
-    // const connectionMessage = `${socket.socket.id} and ${connectWith.socket.id} are now connected.`
+    const connectionMessage = `${socket.socket.id} and ${connectWith.socket.id} are now connected.`
 
-    // const socketMessage = JSON.stringify({ type: connectionMessage })
-
-    // socket.socket.send()
-    // connectWith.socket.send()
+    socket.socket.send(JSON.stringify({ type: connectionMessage, event: 'user_connected', userA: socket.socket.id, userB: connectWith.socket.id }))
+    connectWith.socket.send(JSON.stringify({ type: connectionMessage, event: 'user_connected', userA: connectWith.socket.id, userB: socket.socket.id }))
   } else {
     delete socket.connectedWith
     socket.connected = false
