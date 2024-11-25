@@ -11,6 +11,8 @@
 const LOCAL_RELAY_SERVER_URL: string =
   process.env.REACT_APP_LOCAL_RELAY_SERVER_URL || '';
 
+const baseUrl: string = process.env.REACT_APP_LOCAL_BASEURL || '';
+
 import { useEffect, useRef, useCallback, useState } from 'react';
 
 import { RealtimeClient } from '@openai/realtime-api-beta';
@@ -126,7 +128,18 @@ export function ConsolePage() {
   const [marker, setMarker] = useState<Coordinates | null>(null);
 
   const [selectedLanguage, setSelectedLanguage] = useState('English');
+  // const [userName, setUserName] = useState('');
+  const userName = useRef<string>('');
+  const [connections, setConnections] = useState([]);
+  const [connectionDropdownOpen, setConnectionDropdownOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  // const [selectUser, setSelectUser] = useState('');
+  const selectUser = useRef<string>('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [connectionMessage, setConnectionMessage] = useState('');
+
+  console.log('userName', userName.current, connections);
 
   const languages = [
     { code: 'English', label: 'English' },
@@ -139,8 +152,55 @@ export function ConsolePage() {
     { code: 'Hindi', label: 'Hindi' },
   ];
 
+  const handleConnectUser = () => {
+    connectUsers(userName.current, selectUser.current);
+  };
+
+  const connectUsers = async (
+    connectSocketName: string,
+    connectWithName: string
+  ) => {
+    setLoading(true); // set loading state to true when starting the request
+
+    try {
+      const response = await fetch(`${baseUrl}/api/connect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          connectSocketName,
+          connectWithName,
+          connect: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to connect users');
+      }
+
+      const data = await response.json();
+      console.log('Connect response:', data);
+      // Optionally update state or handle the result
+    } catch (error) {
+      console.error('Error connecting users:', error);
+    } finally {
+      setLoading(false); // stop loading when done
+      setSuccess(true);
+    }
+  };
+
   const toggleDropdown = () => {
     setDropdownOpen((prevState) => !prevState);
+  };
+  const toggleUsersDropdown = () => {
+    setConnectionDropdownOpen((prevState) => !prevState);
+  };
+
+  const handleUserChange = (users: string) => {
+    // setSelectUser(users);
+    selectUser.current = users;
+    setConnectionDropdownOpen(false);
   };
 
   const handleLanguageChange = (language: string) => {
@@ -222,6 +282,9 @@ export function ConsolePage() {
    */
   const disconnectConversation = useCallback(async () => {
     setIsConnected(false);
+    selectUser.current = '';
+    setSuccess(false);
+    setConnectionMessage('');
     setRealtimeEvents([]);
     setItems([]);
     setMemoryKv({});
@@ -395,6 +458,21 @@ export function ConsolePage() {
    * Set all of our instructions, tools, events and more
    */
   useEffect(() => {
+    const fetchConnections = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/connections`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch connections');
+        }
+        const data = await response.json();
+        console.log('Connections:', data);
+        // You can store the connections in state or process them here
+        setConnections(data);
+      } catch (error) {
+        console.error('Error fetching connections:', error);
+      }
+    };
+
     // Get refs
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const client = clientRef.current;
@@ -480,6 +558,36 @@ export function ConsolePage() {
 
     // handle realtime events from client + server for event logging
     client.on('realtime.event', (realtimeEvent: RealtimeEvent) => {
+      //personal UserName
+      if (realtimeEvent.event.event === 'username') {
+        // setUserName(realtimeEvent.event.type);
+        userName.current = realtimeEvent.event.type;
+        // Do something with the username event, like save the username
+        // setUsername(realtimeEvent.event.username); // Example function
+      }
+      if (realtimeEvent.event.event === 'connection') {
+        fetchConnections();
+      }
+      if (realtimeEvent.event.event === 'disconnection') {
+        if (realtimeEvent.event.user === selectUser.current) {
+          console.log('Resetting Connection');
+          selectUser.current = '';
+          // setSelectUser('');
+          setSuccess(false);
+          setConnectionMessage('User Disconnected.');
+        }
+        fetchConnections();
+      }
+      if (realtimeEvent.event.event === 'user_connected') {
+        console.log(realtimeEvent.event, userName.current);
+        setConnectionMessage(realtimeEvent.event.type);
+        if (userName.current === realtimeEvent.event.userA) {
+          selectUser.current = realtimeEvent.event.userB;
+        }
+        if (userName.current === realtimeEvent.event.userB) {
+          selectUser.current = realtimeEvent.event.userA;
+        }
+      }
       setRealtimeEvents((realtimeEvents) => {
         const lastEvent = realtimeEvents[realtimeEvents.length - 1];
         if (lastEvent?.event.type === realtimeEvent.event.type) {
@@ -572,6 +680,56 @@ export function ConsolePage() {
       </div>
       <div className="content-main">
         <div className="content-logs">
+          <div
+            className="content-block events"
+            style={{
+              overflow: 'visible',
+              flexGrow: 0,
+              paddingBottom: '1.5rem',
+            }}
+          >
+            <div className="content-block-title">User Connection</div>
+            {connectionMessage && (
+              <p style={{ color: 'white' }}>{connectionMessage}</p>
+            )}
+            <div className="userform">
+              <div className="header__dropdown" style={{ width: '150px' }}>
+                <button
+                  className="dropdown__button"
+                  onClick={toggleUsersDropdown}
+                  type="button"
+                  disabled={!isConnected}
+                >
+                  {selectUser.current ? selectUser.current : 'Select User'}
+                </button>
+                {connectionDropdownOpen && (
+                  <div className="dropdown__menu">
+                    {connections &&
+                      connections.map(
+                        (connect: { name: string; connected: boolean }) =>
+                          connect.name !== userName.current &&
+                          connect.connected === false && (
+                            <div
+                              key={connect.name}
+                              className="dropdown__item"
+                              onClick={() => handleUserChange(connect.name)}
+                            >
+                              {connect.name}
+                            </div>
+                          )
+                      )}
+                  </div>
+                )}
+              </div>
+              <button
+                // disabled={!selectUser || !success}
+                className="submit-btn"
+                onClick={handleConnectUser}
+              >
+                {loading ? <div className="spinner"></div> : 'Connect'}
+              </button>
+            </div>
+          </div>
           <div className="content-block events">
             <div className="visualization">
               <div className="visualization-entry client">
