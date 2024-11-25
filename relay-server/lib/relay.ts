@@ -99,13 +99,19 @@ export class RealtimeRelay {
       }
       this.sockets.delete(ws.id)
       this.log(`${ws.id} disconnected.`)
+      this.sockets.forEach(x => {
+        x.socket.send(JSON.stringify({ type: `${ws.id} disconnected.`, event: 'disconnection' }))
+      })
     });
 
     // Connect to OpenAI Realtime API
     try {
       this.log(`Connecting to OpenAI...`);
       await client.connect();
-      ws.send(JSON.stringify({ type: ws.id }))
+      ws.send(JSON.stringify({ type: ws.id, event: 'username' }))
+      this.sockets.forEach(x => {
+        x.socket.send(JSON.stringify({ type: `${ws.id} connected.`, event: 'connection' }))
+      })
     } catch (e) {
       this.log(`Error connecting to OpenAI: ${e.message}`);
       ws.close();
