@@ -4,8 +4,10 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import express from 'express'
 import { z } from 'zod';
+import cors from 'cors'
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 
 const server = createServer(app)
@@ -68,6 +70,13 @@ app.post('/api/connect', async (req, res) => {
 
     connectWith.connectedWith = socket.socket
     connectWith.connected = true
+
+    // const connectionMessage = `${socket.socket.id} and ${connectWith.socket.id} are now connected.`
+
+    // const socketMessage = JSON.stringify({ type: connectionMessage })
+
+    // socket.socket.send()
+    // connectWith.socket.send()
   } else {
     delete socket.connectedWith
     socket.connected = false
