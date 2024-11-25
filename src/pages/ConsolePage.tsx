@@ -143,13 +143,7 @@ export function ConsolePage() {
 
   const languages = [
     { code: 'English', label: 'English' },
-    { code: 'Spanish', label: 'Spanish' },
-    { code: 'French', label: 'French' },
-    { code: 'German', label: 'German' },
-    { code: 'Chinese', label: 'Chinese' },
-    { code: 'Persian', label: 'Persian' },
-    { code: 'Urdu', label: 'Urdu' },
-    { code: 'Hindi', label: 'Hindi' },
+    { code: 'Finnish', label: 'Finnish' },
   ];
 
   const handleConnectUser = () => {
