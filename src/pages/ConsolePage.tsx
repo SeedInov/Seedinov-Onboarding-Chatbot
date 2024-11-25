@@ -16,7 +16,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ItemType } from '@openai/realtime-api-beta/dist/lib/client.js';
 import { WavRecorder, WavStreamPlayer } from '../lib/wavtools/index.js';
-import { instructions } from '../utils/conversation_config.js';
+import { getInstructions } from '../utils/conversation_config.js';
 import { WavRenderer } from '../utils/wav_renderer';
 
 import { X, Edit, Zap, ArrowUp, ArrowDown } from 'react-feather';
@@ -124,6 +124,29 @@ export function ConsolePage() {
     lng: -122.418137,
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
+
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const languages = [
+    { code: 'English', label: 'English' },
+    { code: 'Spanish', label: 'Spanish' },
+    { code: 'French', label: 'French' },
+    { code: 'German', label: 'German' },
+    { code: 'Chinese', label: 'Chinese' },
+    { code: 'Persian', label: 'Persian' },
+    { code: 'Urdu', label: 'Urdu' },
+    { code: 'Hindi', label: 'Hindi' },
+  ];
+
+  const toggleDropdown = () => {
+    setDropdownOpen((prevState) => !prevState);
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    setDropdownOpen(false); // Close dropdown after selection
+  };
 
   /**
    * Utility for formatting the timing of logs
@@ -375,9 +398,9 @@ export function ConsolePage() {
     // Get refs
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const client = clientRef.current;
-
+    const prompt = getInstructions(selectedLanguage);
     // Set instructions
-    client.updateSession({ instructions: instructions });
+    client.updateSession({ instructions: prompt });
     // Set transcription, otherwise we don't get user transcriptions back
     client.updateSession({ input_audio_transcription: { model: 'whisper-1' } });
 
@@ -497,8 +520,10 @@ export function ConsolePage() {
     return () => {
       // cleanup; resets to defaults
       client.reset();
+      const prompt = getInstructions(selectedLanguage);
+      console.log('Prompt', prompt);
     };
-  }, []);
+  }, [selectedLanguage]);
 
   /**
    * Render the application
@@ -520,6 +545,29 @@ export function ConsolePage() {
               onClick={() => resetAPIKey()}
             />
           )}
+          <div className="header__dropdown">
+            <button
+              className="dropdown__button"
+              onClick={toggleDropdown}
+              type="button"
+              disabled={isConnected}
+            >
+              {selectedLanguage}
+            </button>
+            {dropdownOpen && (
+              <div className="dropdown__menu">
+                {languages.map((language) => (
+                  <div
+                    key={language.code}
+                    className="dropdown__item"
+                    onClick={() => handleLanguageChange(language.label)}
+                  >
+                    {language.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div className="content-main">

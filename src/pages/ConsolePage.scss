@@ -22,6 +22,7 @@
     color: #30ab89;
     padding: 8px 16px;
     min-height: 40px;
+    z-index: 100000;
     .content-title {
       flex-grow: 1;
       display: flex;
@@ -32,6 +33,65 @@
       img {
         width: 24px;
         height: 24px;
+      }
+    }
+    .header__dropdown {
+      position: relative;
+
+      .dropdown__button {
+        background-color: #30ab89;
+        color: #fff;
+        padding: 0.3rem .6rem;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: .8rem;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: #555;
+        }
+        &:disabled {
+          cursor: not-allowed; // Disabled state
+          background-color: #d3d3d3; // Gray out the button
+          border: 1px solid #aaa;
+          color: #888;
+        }
+      }
+
+      .dropdown__menu {
+        position: absolute !important;
+        top: calc(100% + 0.5rem); // Position menu below the button
+        right: 0;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 0.25rem;
+        width: 150px;
+        max-height: 180px;
+        overflow-y: scroll;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-10px); // Adds a slide-down effect
+        transition: opacity 0.3s ease, transform 0.3s ease;
+
+        &.active {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .dropdown__item {
+          padding: 0.5rem 1rem;
+          color: #333;
+          cursor: pointer;
+          font-size: .8rem;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: #f1f1f1;
+          }
+        }
       }
     }
   }
