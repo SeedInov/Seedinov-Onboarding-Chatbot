@@ -100,7 +100,7 @@ export class RealtimeRelay {
       this.sockets.delete(ws.id)
       this.log(`${ws.id} disconnected.`)
       this.sockets.forEach(x => {
-        x.socket.send(JSON.stringify({ type: `${ws.id} disconnected.`, event: 'disconnection' }))
+        x.socket.send(JSON.stringify({ type: `${ws.id} disconnected.`, event: 'disconnection', user: ws.id }))
       })
     });
 
