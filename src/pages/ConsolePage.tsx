@@ -566,7 +566,6 @@ export function ConsolePage() {
         if (realtimeEvent.event.user === selectUser.current) {
           console.log('Resetting Connection');
           selectUser.current = '';
-          // setSelectUser('');
           setSuccess(false);
           setConnectionMessage('User Disconnected.');
         }
@@ -593,7 +592,12 @@ export function ConsolePage() {
         }
       });
     });
-    client.on('error', (event: any) => console.error(event));
+    client.on('error', (event: any) => {
+      console.error(event);
+      selectUser.current = '';
+      setSuccess(false);
+      setConnectionMessage('User Disconnected.');
+    });
     client.on('conversation.interrupted', async () => {
       const trackSampleOffset = await wavStreamPlayer.interrupt();
       if (trackSampleOffset?.trackId) {
@@ -623,7 +627,7 @@ export function ConsolePage() {
       // cleanup; resets to defaults
       client.reset();
       const prompt = getInstructions(selectedLanguage);
-      console.log('Prompt', prompt);
+      // console.log('Prompt', prompt);
     };
   }, [selectedLanguage]);
 
